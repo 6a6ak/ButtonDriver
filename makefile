@@ -1,23 +1,18 @@
 MCU = atmega328p
 F_CPU = 16000000UL
-TARGET = main
-CC="C:\avr\bin\avr-gcc"
-OBJCOPY="C:\avr\bin\avr-objcopy"
-CFLAGS = -mmcu=$(MCU) -DF_CPU=$(F_CPU) -Wall -Os -I./drive
+CC = avr-gcc
+CFLAGS = -mmcu=$(MCU) -DF_CPU=$(F_CPU) -Os
 
-SRC = main.c driver/button_driver.c driver/millis.c
-OBJ = $(SRC:.c=.o)
+OBJS = main.o driver/button_driver.o
 
-all: $(TARGET).hex
-
-$(TARGET).hex: $(TARGET).elf
-	$(OBJCOPY) -O ihex -R .eeprom $< $@
-
-$(TARGET).elf: $(OBJ)
-	$(CC) $(CFLAGS) $^ -o $@
+main.elf: $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $^
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
+main.hex: main.elf
+	avr-objcopy -O ihex -R .eeprom main.elf main.hex
+
 clean:
-	del /Q *.o *.elf *.hex 2>nul || exit 0
+	rm -f *.o driver/*.o *.elf *.hex

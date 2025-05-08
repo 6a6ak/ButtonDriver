@@ -1,26 +1,19 @@
 #include <avr/io.h>
-#include <util/delay.h>
 #include "driver/button_driver.h"
-#include "driver/millis.h"
+#include <util/delay.h>
 
 int main(void) {
-    DDRB |= (1 << DDB5);  // LED på pin 13 (PORTB5) 00000001 << 5 --> b00100000
-    millis_init();
-
-    Button btn = button_create(2); // Använd pin 2
+    Button btn = button_create(2, 13); // دکمه روی پین 2، LED روی 13
     button_init(&btn);
 
-    uint8_t last = 0;
+    uint8_t last_state = 0;
 
     while (1) {
-        uint8_t current = button_read(&btn, 50);
-
-        if (current && !last) {
-            PORTB ^= (1 << PORTB5);
+        uint8_t current = button_pressed(&btn);
+        if (current && !last_state) {
+            button_toggle_led(&btn);
+            _delay_ms(200); // جلوگیری از تکرار ناخواسته در شبیه‌ساز
         }
-
-        last = current;
-        _delay_ms(500);
-        PORTB ^= (1 << PORTB5);
+        last_state = current;
     }
 }
